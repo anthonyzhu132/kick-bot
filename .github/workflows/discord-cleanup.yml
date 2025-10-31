@@ -1,0 +1,26 @@
+name: Weekly Discord Cleanup
+
+on:
+  schedule:
+    # Weekly at 04:00 America/Vancouver (≈ 11:00 UTC during DST)
+    - cron: "0 11 * * 1"
+  workflow_dispatch: {} # manual run button in GitHub Actions UI
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci || npm i
+      - run: npm run cleanup
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          GUILD_ID: ${{ secrets.GUILD_ID }}
+          DRY_RUN: "false" # start safe, switch to "false" when ready
+          LIMIT: "30" # number of members to process per run
+          ALLOWLIST_ROLE_IDS: ${{ secrets.ALLOWLIST_ROLE_IDS }}
